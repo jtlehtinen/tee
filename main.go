@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -27,7 +26,7 @@ func openAll(filenames []string, add bool) ([]*os.File, error) {
 		file, err := os.OpenFile(filename, perm, 0666)
 		if err != nil {
 			closeAll(files)
-			return nil, errors.New("failed to open a file")
+			return nil, err
 		}
 		files = append(files, file)
 	}
@@ -68,7 +67,7 @@ func run(args []string, stdin io.Reader, stdout io.Writer) error {
 
 	files, err := openAll(flags.Args(), *add)
 	if err != nil {
-		return errors.New("failed to open file")
+		return err
 	}
 	defer closeAll(files)
 

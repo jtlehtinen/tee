@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/signal"
+	"syscall"
 )
 
 const (
@@ -58,11 +60,20 @@ func run(args []string, stdin io.Reader, stdout io.Writer) error {
 		flags.PrintDefaults()
 	}
 
-	add := flags.Bool("a", false, "Appends the output to each file, instead of overwriting.")
-	// @TODO: handle interrupts
-	//ignore := flags.Bool("i", false, "Ignores interrupts.")
+	add := flags.Bool("a", false, "Append the output to each file, instead of overwriting.")
+	sigint := flags.Bool("i", false, "Ignore interrupt signals.")
 	if err := flags.Parse(args[1:]); err != nil {
 		return err
+	}
+
+	if *sigint {
+		c := make(chan os.Signal, 2)
+		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+		go func() {
+			for {
+				<-c
+			}
+		}()
 	}
 
 	files, err := openAll(flags.Args(), *add)

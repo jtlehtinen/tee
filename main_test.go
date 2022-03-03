@@ -77,9 +77,11 @@ func TestAppendToFile(t *testing.T) {
 	}()
 
 	want := "hello world"
+	wantLeft := want[:3]
+	wantRight := want[3:]
 
 	for _, filename := range filenames {
-		if err := os.WriteFile(filename, []byte(want[:3]), 0666); err != nil {
+		if err := os.WriteFile(filename, []byte(wantLeft), 0666); err != nil {
 			t.Fatalf("failed to write to temporary file %q", filename)
 		}
 	}
@@ -87,7 +89,7 @@ func TestAppendToFile(t *testing.T) {
 	args := []string{"tee", "-a"}
 	args = append(args, filenames...)
 
-	stdin := bytes.NewBuffer([]byte(want[3:]))
+	stdin := bytes.NewBuffer([]byte(wantRight))
 
 	var stdout bytes.Buffer
 	if err := run(args, stdin, &stdout); err != nil {
@@ -106,3 +108,5 @@ func TestAppendToFile(t *testing.T) {
 		}
 	}
 }
+
+// @TODO: Test -i flag
